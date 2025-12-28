@@ -1,0 +1,246 @@
+@import url("https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap");
+
+:root {
+  color-scheme: light;
+  --bg-1: #fff6e6;
+  --bg-2: #e6f7f2;
+  --bg-3: #fff;
+  --ink: #1f2a33;
+  --muted: #4c5a66;
+  --accent: #ff8a3d;
+  --accent-deep: #e66a1f;
+  --accent-2: #0f8b8d;
+  --danger: #b5311f;
+  --shadow: 0 16px 36px rgba(31, 42, 51, 0.15);
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "M PLUS Rounded 1c", "Zen Kaku Gothic New", sans-serif;
+  color: var(--ink);
+  background: radial-gradient(circle at top right, rgba(255, 212, 160, 0.5), transparent 55%),
+    radial-gradient(circle at 20% 20%, rgba(99, 209, 200, 0.4), transparent 48%),
+    linear-gradient(135deg, var(--bg-1), var(--bg-2));
+  min-height: 100vh;
+}
+
+.page {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 40px 20px 64px;
+}
+
+.hero {
+  background: var(--bg-3);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px 32px;
+  box-shadow: var(--shadow);
+}
+
+.brand-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(15, 139, 141, 0.12);
+  color: var(--accent-2);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-size: 14px;
+}
+
+h1 {
+  margin: 12px 0 8px;
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.lead {
+  margin: 0;
+  font-size: clamp(16px, 2.2vw, 20px);
+  color: var(--muted);
+}
+
+.banner {
+  margin-top: 20px;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  background: rgba(255, 138, 61, 0.18);
+  color: var(--danger);
+  border: 2px solid rgba(181, 49, 31, 0.25);
+}
+
+.panel {
+  margin-top: 20px;
+  background: var(--bg-3);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 18px 16px;
+  border-radius: var(--radius-md);
+  font-size: clamp(18px, 2.6vw, 22px);
+  font-weight: 800;
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.action-button.play {
+  background: linear-gradient(135deg, #1b8e5a, #33b27a);
+}
+
+.action-button.apk {
+  background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+}
+
+.action-button:hover,
+.action-button:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.16);
+}
+
+.action-button.is-disabled {
+  pointer-events: none;
+  opacity: 0.45;
+  box-shadow: none;
+}
+
+.action-note {
+  margin: 16px 0 0;
+  font-size: clamp(16px, 2.1vw, 19px);
+  font-weight: 700;
+  color: var(--accent-2);
+}
+
+.panel h2 {
+  margin: 0 0 12px;
+  font-size: clamp(20px, 3vw, 26px);
+}
+
+.steps ol {
+  margin: 0;
+  padding-left: 22px;
+  font-size: clamp(16px, 2.2vw, 20px);
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.help p {
+  margin: 0;
+  font-size: clamp(16px, 2.2vw, 20px);
+  color: var(--muted);
+}
+
+.info-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.info-row p {
+  margin: 6px 0 0;
+  font-size: 16px;
+  color: var(--muted);
+}
+
+.note {
+  background: rgba(15, 139, 141, 0.1);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-weight: 700;
+  color: var(--accent-2);
+}
+
+.footer {
+  margin-top: 24px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.is-hidden {
+  display: none !important;
+}
+
+[data-animate] {
+  opacity: 0;
+  transform: translateY(18px);
+  animation: floatIn 0.7s ease forwards;
+}
+
+[data-animate="1"] {
+  animation-delay: 0.05s;
+}
+
+[data-animate="2"] {
+  animation-delay: 0.15s;
+}
+
+[data-animate="3"] {
+  animation-delay: 0.25s;
+}
+
+[data-animate="4"] {
+  animation-delay: 0.35s;
+}
+
+[data-animate="5"] {
+  animation-delay: 0.45s;
+}
+
+@keyframes floatIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-animate] {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 28px 16px 48px;
+  }
+
+  .hero {
+    padding: 22px 18px 26px;
+  }
+
+  .panel {
+    padding: 20px;
+  }
+}

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dimodoro テスト版 インストール</title>
+    <meta
+      name="description"
+      content="Dimodoro テスト版のインストールページです。APKを直接ダウンロードできます。"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero" data-animate="1">
+        <span class="brand-pill">Dimodoro</span>
+        <h1>Dimodoro テスト版 インストール</h1>
+        <p class="lead">
+          このページから直接ダウンロードできます。迷ったら通話で案内します。
+        </p>
+      </header>
+
+      <div
+        id="expiryBanner"
+        class="banner is-hidden"
+        role="status"
+        aria-live="polite"
+      ></div>
+      <div id="configError" class="banner is-hidden" role="alert"></div>
+
+      <section class="panel actions" data-animate="2">
+        <div class="action-grid">
+          <a
+            id="playButton"
+            class="action-button play is-hidden"
+            href="#"
+            aria-disabled="true"
+            >Playストアでインストール</a
+          >
+          <a
+            id="apkButton"
+            class="action-button apk is-disabled"
+            href="#"
+            aria-disabled="true"
+            >APKでインストール</a
+          >
+        </div>
+        <p class="action-note">APKを押す&nbsp;&nbsp;ダウンロード&nbsp;&nbsp;インストール</p>
+      </section>
+
+      <section class="panel steps" data-animate="3">
+        <h2>かんたん手順</h2>
+        <ol>
+          <li>「APKでインストール」を押す</li>
+          <li>ダウンロードが終わったら開く</li>
+          <li>インストールを押す</li>
+        </ol>
+      </section>
+
+      <section class="panel help" data-animate="4">
+        <h2>ブロックされたら</h2>
+        <p>ブロックされたらこの提供元を許可をON（通話で案内します）</p>
+      </section>
+
+      <section class="panel info" data-animate="5">
+        <h2>配布情報</h2>
+        <div class="info-row">
+          <div>
+            <p>リポジトリ: <span id="repoName">読み込み中</span></p>
+            <p>期限: <span id="expiresAt">読み込み中</span></p>
+          </div>
+          <div id="noteBox" class="note is-hidden">
+            <span id="noteText"></span>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">Dimodoro テスト配布ページ</footer>
+    </main>
+
+    <noscript>
+      <div class="page">
+        <div class="banner" role="alert">
+          JavaScriptを有効にしてください。APKのリンク表示に必要です。
+        </div>
+      </div>
+    </noscript>
+
+    <script src="app.js"></script>
+  </body>
+</html>
