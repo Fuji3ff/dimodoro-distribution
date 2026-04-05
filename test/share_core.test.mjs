@@ -100,6 +100,39 @@ test('normalizeSummaryPayload は valid unavailable payload を保持しつつ t
   assert.equal(payload?.shareCode, '7KQ9M2XZ');
 });
 
+test('normalizeSummaryPayload は step required field 欠損を含む payload 全体を reject する', () => {
+  assert.equal(
+    normalizeSummaryPayload({
+      share_code: '7KQ9M2XZ',
+      public_availability: 'available',
+      title: 'Night Focus Reset',
+      icon_key: 'sparkles',
+      tags: ['focus'],
+      benefits_sentence: '夜の集中準備を 25 分で整える routine です。',
+      total_duration_sec: 1500,
+      has_hue: false,
+      time_hint: '夜に向く 25 分',
+      step_summaries: [
+        {
+          step_number: 1,
+          step_type: 'dimmer',
+          title: 'Dim lights',
+          duration_sec: null,
+          summary_line: '画面減光を適用',
+        },
+        {
+          step_number: 2,
+          step_type: 'timer',
+          title: 'Missing summary',
+          duration_sec: 300,
+          summary_line: '',
+        },
+      ],
+    }),
+    null
+  );
+});
+
 test('deriveSummaryPresentation は unavailable payload を残して banner 表示にする', () => {
   const payload = normalizeSummaryPayload({
     share_code: '7KQ9M2XZ',
@@ -246,4 +279,10 @@ test('mobile では summary card が CTA より先に並ぶ', () => {
     css,
     /@media \(max-width: 899px\)\s*\{[\s\S]*?\.summary-card\s*\{\s*order:\s*1;\s*\}[\s\S]*?\.action-rail\s*\{\s*order:\s*2;\s*\}[\s\S]*?\}/
   );
+});
+
+test('Open attempt URL は canonical share URL がないときに組み立てない', () => {
+  const appJs = readFileSync(new URL('../docs/share/app.js', import.meta.url), 'utf8');
+
+  assert.match(appJs, /function buildOpenAttemptUrl\(\)\s*\{\s*if \(!state\.canonicalShareUrl\) \{\s*return null;/);
 });

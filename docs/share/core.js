@@ -141,11 +141,13 @@ export function normalizeSummaryPayload(payload) {
   const totalDurationSec = normalizeInteger(payload.total_duration_sec);
   const timeHint = normalizeString(payload.time_hint);
   const tags = normalizeTagList(payload.tags);
-  const stepSummaries = Array.isArray(payload.step_summaries)
-    ? payload.step_summaries
-        .map((entry) => normalizeStepSummary(entry))
-        .filter(Boolean)
+  const normalizedStepEntries = Array.isArray(payload.step_summaries)
+    ? payload.step_summaries.map((entry) => normalizeStepSummary(entry))
     : null;
+  const stepSummaries =
+    normalizedStepEntries && normalizedStepEntries.every(Boolean)
+      ? normalizedStepEntries
+      : null;
 
   if (
     !shareCode ||

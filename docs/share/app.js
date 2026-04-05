@@ -326,6 +326,10 @@ function resolveInstallHref() {
 }
 
 function buildOpenAttemptUrl() {
+  if (!state.canonicalShareUrl) {
+    return null;
+  }
+
   const url = new URL(state.canonicalShareUrl);
   url.searchParams.set('open_attempt', '1');
   return url.toString();
@@ -514,10 +518,11 @@ function updateCtas() {
     device: state.device,
   });
   const installHref = resolveInstallHref();
+  const openAttemptUrl = buildOpenAttemptUrl();
 
-  if (ctaModel.primary === 'open') {
+  if (ctaModel.primary === 'open' && openAttemptUrl) {
     setText(elements.primaryCta, state.messages.open_label);
-    elements.primaryCta.href = buildOpenAttemptUrl();
+    elements.primaryCta.href = openAttemptUrl;
     elements.primaryCta.dataset.action = 'open';
   } else {
     setText(elements.primaryCta, state.messages.get_label);
@@ -652,8 +657,13 @@ function attachEventListeners() {
       return;
     }
 
+    const openAttemptUrl = buildOpenAttemptUrl();
+    if (!openAttemptUrl) {
+      return;
+    }
+
     event.preventDefault();
-    window.location.assign(buildOpenAttemptUrl());
+    window.location.assign(openAttemptUrl);
   });
 
   elements.reportButton.addEventListener('click', () => {
