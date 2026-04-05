@@ -326,8 +326,25 @@ test('share_id 未解決時は Open ではなく Get fallback に倒す意図が
   assert.match(appJs, /if \(ctaModel\.primary === 'open' && canOpenDirectly\)/);
 });
 
+test('share_id 未解決時は secondary Get CTA を重複表示しない', () => {
+  const appJs = readFileSync(new URL('../docs/share/app.js', import.meta.url), 'utf8');
+
+  assert.match(
+    appJs,
+    /const shouldShowSecondaryGet = ctaModel\.secondary === 'get' && canOpenDirectly;/
+  );
+  assert.match(appJs, /if \(shouldShowSecondaryGet\) \{/);
+});
+
 test('share config の install 導線は project pages 配下でも解決できる相対 path を使う', () => {
   const config = readFileSync(new URL('../docs/share/config.json', import.meta.url), 'utf8');
 
   assert.match(config, /"install_page_url"\s*:\s*"\.\.\/install\/"/);
+});
+
+test('404 fallback の戻り先リンクは project pages 配下でも base path を維持する', () => {
+  const html = readFileSync(new URL('../docs/404.html', import.meta.url), 'utf8');
+
+  assert.match(html, /function buildHomeHref\(pathname\)/);
+  assert.match(html, /document\.getElementById\('topLink'\)\.href = buildHomeHref\(window\.location\.pathname\);/);
 });

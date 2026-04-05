@@ -37,10 +37,33 @@
     <main class="fallback">
       <h1>Share ページへ移動しています</h1>
       <p id="message">移動しない場合はトップへ戻ってください。</p>
-      <p><a href="/">Dimodoro トップへ戻る</a></p>
+      <p><a id="topLink" href="/">Dimodoro トップへ戻る</a></p>
     </main>
 
     <script>
+      function buildBasePrefix(pathname) {
+        const segments = String(pathname)
+          .split('/')
+          .map((segment) => segment.trim())
+          .filter(Boolean);
+        const shareIndex = segments.indexOf('share');
+
+        if (shareIndex > 0) {
+          return segments.slice(0, shareIndex).join('/');
+        }
+
+        if (shareIndex === 0) {
+          return '';
+        }
+
+        return segments.length > 0 ? segments[0] : '';
+      }
+
+      function buildHomeHref(pathname) {
+        const basePrefix = buildBasePrefix(pathname);
+        return basePrefix ? `/${basePrefix}/` : '/';
+      }
+
       function buildShareRedirectTarget(pathname, search) {
         const segments = String(pathname)
           .split('/')
@@ -76,6 +99,7 @@
         window.location.pathname,
         window.location.search
       );
+      document.getElementById('topLink').href = buildHomeHref(window.location.pathname);
 
       if (target) {
         window.location.replace(target);

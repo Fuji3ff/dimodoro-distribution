@@ -521,6 +521,7 @@ function updateCtas() {
   const installHref = resolveInstallHref();
   const openAttemptUrl = buildOpenAttemptUrl();
   const canOpenDirectly = Boolean(state.shareId && openAttemptUrl);
+  const shouldShowSecondaryGet = ctaModel.secondary === 'get' && canOpenDirectly;
 
   if (ctaModel.primary === 'open' && canOpenDirectly) {
     setText(elements.primaryCta, state.messages.open_label);
@@ -536,7 +537,7 @@ function updateCtas() {
   elements.primaryCta.classList.remove('is-disabled');
   elements.primaryCta.removeAttribute('aria-disabled');
 
-  if (ctaModel.secondary === 'get') {
+  if (shouldShowSecondaryGet) {
     setVisibility(elements.secondaryCta, true);
     setText(elements.secondaryCta, state.messages.get_label);
     elements.secondaryCta.href = installHref;
