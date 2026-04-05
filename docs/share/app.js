@@ -326,11 +326,12 @@ function resolveInstallHref() {
 }
 
 function buildOpenAttemptUrl() {
-  if (!state.canonicalShareUrl) {
+  const canonicalShareUrl = state.canonicalShareUrl;
+  if (typeof canonicalShareUrl !== 'string' || !canonicalShareUrl) {
     return null;
   }
 
-  const url = new URL(state.canonicalShareUrl);
+  const url = new URL(canonicalShareUrl);
   url.searchParams.set('open_attempt', '1');
   return url.toString();
 }
@@ -519,12 +520,14 @@ function updateCtas() {
   });
   const installHref = resolveInstallHref();
   const openAttemptUrl = buildOpenAttemptUrl();
+  const canOpenDirectly = Boolean(state.shareId && openAttemptUrl);
 
-  if (ctaModel.primary === 'open' && openAttemptUrl) {
+  if (ctaModel.primary === 'open' && canOpenDirectly) {
     setText(elements.primaryCta, state.messages.open_label);
     elements.primaryCta.href = openAttemptUrl;
     elements.primaryCta.dataset.action = 'open';
   } else {
+    // WHY: share_id 未解決や canonical URL 欠落時は Open へ進めず Get fallback に固定する。
     setText(elements.primaryCta, state.messages.get_label);
     elements.primaryCta.href = installHref;
     elements.primaryCta.dataset.action = 'get';
@@ -541,7 +544,7 @@ function updateCtas() {
     setVisibility(elements.secondaryCta, false);
   }
 
-  if (!state.device.isAndroidMobile || ctaModel.primary === 'get') {
+  if (!state.device.isAndroidMobile || ctaModel.primary === 'get' || !canOpenDirectly) {
     setText(elements.ctaHint, state.messages.cta_hint_get);
   } else if (state.installState === 'installed') {
     setText(elements.ctaHint, state.messages.cta_hint_open);

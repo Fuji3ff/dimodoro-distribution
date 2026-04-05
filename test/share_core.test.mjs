@@ -284,5 +284,15 @@ test('mobile では summary card が CTA より先に並ぶ', () => {
 test('Open attempt URL は canonical share URL がないときに組み立てない', () => {
   const appJs = readFileSync(new URL('../docs/share/app.js', import.meta.url), 'utf8');
 
-  assert.match(appJs, /function buildOpenAttemptUrl\(\)\s*\{\s*if \(!state\.canonicalShareUrl\) \{\s*return null;/);
+  assert.match(
+    appJs,
+    /function buildOpenAttemptUrl\(\)\s*\{\s*const canonicalShareUrl = state\.canonicalShareUrl;\s*if \(typeof canonicalShareUrl !== 'string' \|\| !canonicalShareUrl\) \{\s*return null;/
+  );
+});
+
+test('share_id 未解決時は Open ではなく Get fallback に倒す意図が app.js に明示されている', () => {
+  const appJs = readFileSync(new URL('../docs/share/app.js', import.meta.url), 'utf8');
+
+  assert.match(appJs, /const canOpenDirectly = Boolean\(state\.shareId && openAttemptUrl\);/);
+  assert.match(appJs, /if \(ctaModel\.primary === 'open' && canOpenDirectly\)/);
 });
