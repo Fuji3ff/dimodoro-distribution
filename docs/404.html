@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dimodoro Share Redirect</title>
+    <meta name="robots" content="noindex,nofollow" />
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        font-family: "M PLUS Rounded 1c", "Zen Kaku Gothic New", sans-serif;
+        background:
+          radial-gradient(circle at top right, rgba(255, 212, 160, 0.55), transparent 52%),
+          radial-gradient(circle at 12% 20%, rgba(15, 139, 141, 0.28), transparent 44%),
+          linear-gradient(135deg, #fff6e6, #e6f7f2);
+        color: #1f2a33;
+      }
+
+      .fallback {
+        width: min(560px, calc(100vw - 32px));
+        padding: 28px 24px;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: 0 18px 44px rgba(31, 42, 51, 0.14);
+      }
+
+      a {
+        color: #0f8b8d;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="fallback">
+      <h1>Share ページへ移動しています</h1>
+      <p id="message">移動しない場合はトップへ戻ってください。</p>
+      <p><a id="topLink" href="/">Dimodoro トップへ戻る</a></p>
+    </main>
+
+    <script>
+      function buildBasePrefix(pathname) {
+        const segments = String(pathname)
+          .split('/')
+          .map((segment) => segment.trim())
+          .filter(Boolean);
+        const shareIndex = segments.indexOf('share');
+
+        if (shareIndex > 0) {
+          return segments.slice(0, shareIndex).join('/');
+        }
+
+        if (shareIndex === 0) {
+          return '';
+        }
+
+        return segments.length > 0 ? segments[0] : '';
+      }
+
+      function buildHomeHref(pathname) {
+        const basePrefix = buildBasePrefix(pathname);
+        return basePrefix ? `/${basePrefix}/` : '/';
+      }
+
+      function buildShareRedirectTarget(pathname, search) {
+        const segments = String(pathname)
+          .split('/')
+          .map((segment) => segment.trim())
+          .filter(Boolean);
+        const shareIndex = segments.indexOf('share');
+
+        if (shareIndex === -1 || shareIndex === segments.length - 1) {
+          return null;
+        }
+
+        let shareId = '';
+        try {
+          shareId = decodeURIComponent(segments[shareIndex + 1] || '').trim();
+        } catch {
+          shareId = '';
+        }
+
+        if (!shareId || shareId === 'index.html') {
+          return null;
+        }
+
+        const basePath = segments.slice(0, shareIndex).join('/');
+        const prefix = basePath ? `/${basePath}` : '';
+        const params = new URLSearchParams(search);
+        params.set('share_id', shareId);
+        return `${prefix}/share/?${params.toString()}`;
+      }
+
+      // WHY: GitHub Pages の custom 404 は要求 URL のまま配信されるため、
+      // 相対 import に依存せずこのファイル単体で redirect 判定できるようにする。
+      const target = buildShareRedirectTarget(
+        window.location.pathname,
+        window.location.search
+      );
+      document.getElementById('topLink').href = buildHomeHref(window.location.pathname);
+
+      if (target) {
+        window.location.replace(target);
+      } else {
+        document.getElementById('message').textContent =
+          'share URL を判定できませんでした。トップへ戻ってください。';
+      }
+    </script>
+  </body>
+</html>
