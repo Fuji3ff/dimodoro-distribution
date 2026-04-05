@@ -32,6 +32,16 @@ test('resolveShareIdFromLocation は query fallback を許可する', () => {
   );
 });
 
+test('resolveShareIdFromLocation は不正エンコードでも white screen にせず query fallback を使える', () => {
+  assert.equal(
+    resolveShareIdFromLocation({
+      pathname: '/share/%E0%A4%A',
+      search: '?share_id=rs_query_fallback_after_invalid_path',
+    }),
+    'rs_query_fallback_after_invalid_path'
+  );
+});
+
 test('buildShareRedirectTarget は GitHub Pages 配下でも /share/?share_id=... へ寄せる', () => {
   assert.equal(
     buildShareRedirectTarget({
@@ -39,6 +49,16 @@ test('buildShareRedirectTarget は GitHub Pages 配下でも /share/?share_id=..
       search: '',
     }),
     '/dimodoro-distribution/share/?share_id=rs_redirect_target'
+  );
+});
+
+test('buildShareRedirectTarget は不正エンコードの path を redirect 対象にしない', () => {
+  assert.equal(
+    buildShareRedirectTarget({
+      pathname: '/dimodoro-distribution/share/%E0%A4%A',
+      search: '',
+    }),
+    null
   );
 });
 

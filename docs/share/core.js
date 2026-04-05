@@ -6,6 +6,15 @@ function normalizeString(value) {
   return typeof value === 'string' ? value.trim() : '';
 }
 
+function safelyDecodePathSegment(value) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    // WHY: 壊れた share URL でも white screen にせず unavailable shell へ倒す。
+    return '';
+  }
+}
+
 function normalizeInteger(value) {
   if (typeof value !== 'number' || !Number.isFinite(value)) {
     return null;
@@ -67,8 +76,9 @@ export function resolveShareIdFromLocation({ pathname = '', search = '' } = {}) 
       continue;
     }
     const candidate = normalizeString(segments[index + 1]);
-    if (candidate && candidate !== 'index.html') {
-      return decodeURIComponent(candidate);
+    const decodedCandidate = safelyDecodePathSegment(candidate);
+    if (decodedCandidate && decodedCandidate !== 'index.html') {
+      return decodedCandidate;
     }
   }
 
@@ -88,7 +98,7 @@ export function buildShareRedirectTarget({ pathname = '', search = '' } = {}) {
     return null;
   }
 
-  const shareId = normalizeString(segments[shareIndex + 1]);
+  const shareId = safelyDecodePathSegment(normalizeString(segments[shareIndex + 1]));
   if (!shareId || shareId === 'index.html') {
     return null;
   }

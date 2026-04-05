@@ -332,12 +332,7 @@ function buildOpenAttemptUrl() {
 }
 
 function renderQr() {
-  if (
-    !state.shareId ||
-    !state.canonicalShareUrl ||
-    !elements.qrCanvas ||
-    !state.presentation.hasPayload
-  ) {
+  if (!state.shareId || !state.canonicalShareUrl || !elements.qrCanvas) {
     setVisibility(elements.qrCard, false);
     return;
   }
@@ -394,13 +389,21 @@ function renderStepList(payload) {
   if (!payload.stepSummaries.length) {
     const empty = document.createElement('li');
     empty.className = 'step-item';
-    empty.innerHTML = `
-      <div class="step-index">-</div>
-      <div>
-        <h4 class="step-title">${state.messages.step_section_title}</h4>
-        <p class="step-summary">${state.messages.loading_benefits}</p>
-      </div>
-    `;
+    const index = document.createElement('div');
+    index.className = 'step-index';
+    index.textContent = '-';
+
+    const body = document.createElement('div');
+    const title = document.createElement('h4');
+    title.className = 'step-title';
+    title.textContent = state.messages.step_section_title;
+
+    const summary = document.createElement('p');
+    summary.className = 'step-summary';
+    summary.textContent = state.messages.loading_benefits;
+
+    body.append(title, summary);
+    empty.append(index, body);
     elements.stepList.append(empty);
     return;
   }
@@ -414,19 +417,40 @@ function renderStepList(payload) {
         ? state.messages.no_duration
         : formatStepDuration(step.durationSec, state.locale);
 
-    item.innerHTML = `
-      <div class="step-index">${step.stepNumber}</div>
-      <div>
-        <div class="step-title-row">
-          <h4 class="step-title">${step.title}</h4>
-          <span class="step-type-pill">${localizedStepType(step.stepType)}</span>
-        </div>
-        <p class="step-summary">${step.summaryLine}</p>
-        <div class="step-meta">
-          <span class="step-duration-pill">${state.messages.step_duration_label}: ${durationText}</span>
-        </div>
-      </div>
-    `;
+    // WHY: summary API 由来文字列を HTML 解釈させず、public page の XSS 面を狭める。
+    const index = document.createElement('div');
+    index.className = 'step-index';
+    index.textContent = String(step.stepNumber);
+
+    const body = document.createElement('div');
+
+    const titleRow = document.createElement('div');
+    titleRow.className = 'step-title-row';
+
+    const title = document.createElement('h4');
+    title.className = 'step-title';
+    title.textContent = step.title;
+
+    const typePill = document.createElement('span');
+    typePill.className = 'step-type-pill';
+    typePill.textContent = localizedStepType(step.stepType);
+
+    titleRow.append(title, typePill);
+
+    const summary = document.createElement('p');
+    summary.className = 'step-summary';
+    summary.textContent = step.summaryLine;
+
+    const meta = document.createElement('div');
+    meta.className = 'step-meta';
+
+    const durationPill = document.createElement('span');
+    durationPill.className = 'step-duration-pill';
+    durationPill.textContent = `${state.messages.step_duration_label}: ${durationText}`;
+
+    meta.append(durationPill);
+    body.append(titleRow, summary, meta);
+    item.append(index, body);
     elements.stepList.append(item);
   });
 }
