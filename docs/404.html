@@ -40,13 +40,42 @@
       <p><a href="/">Dimodoro トップへ戻る</a></p>
     </main>
 
-    <script type="module">
-      import { buildShareRedirectTarget } from './share/core.js';
+    <script>
+      function buildShareRedirectTarget(pathname, search) {
+        const segments = String(pathname)
+          .split('/')
+          .map((segment) => segment.trim())
+          .filter(Boolean);
+        const shareIndex = segments.indexOf('share');
 
-      const target = buildShareRedirectTarget({
-        pathname: window.location.pathname,
-        search: window.location.search,
-      });
+        if (shareIndex === -1 || shareIndex === segments.length - 1) {
+          return null;
+        }
+
+        let shareId = '';
+        try {
+          shareId = decodeURIComponent(segments[shareIndex + 1] || '').trim();
+        } catch {
+          shareId = '';
+        }
+
+        if (!shareId || shareId === 'index.html') {
+          return null;
+        }
+
+        const basePath = segments.slice(0, shareIndex).join('/');
+        const prefix = basePath ? `/${basePath}` : '';
+        const params = new URLSearchParams(search);
+        params.set('share_id', shareId);
+        return `${prefix}/share/?${params.toString()}`;
+      }
+
+      // WHY: GitHub Pages の custom 404 は要求 URL のまま配信されるため、
+      // 相対 import に依存せずこのファイル単体で redirect 判定できるようにする。
+      const target = buildShareRedirectTarget(
+        window.location.pathname,
+        window.location.search
+      );
 
       if (target) {
         window.location.replace(target);

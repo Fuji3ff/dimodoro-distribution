@@ -559,11 +559,11 @@ body {
 
 @media (max-width: 899px) {
   .summary-card {
-    order: 2;
+    order: 1;
   }
 
   .action-rail {
-    order: 1;
+    order: 2;
   }
 }
 

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import {
@@ -228,5 +229,21 @@ test('resolveInitialLocale は storage を優先し fallback で browser locale 
       browserLanguage: 'ja-JP',
     }),
     'ja'
+  );
+});
+
+test('404 fallback は相対 module import に依存せず単体で redirect 判定できる', () => {
+  const html = readFileSync(new URL('../docs/404.html', import.meta.url), 'utf8');
+
+  assert.match(html, /function buildShareRedirectTarget\(pathname, search\)/);
+  assert.doesNotMatch(html, /import\s+\{\s*buildShareRedirectTarget\s*\}\s+from\s+'\.\/share\/core\.js'/);
+});
+
+test('mobile では summary card が CTA より先に並ぶ', () => {
+  const css = readFileSync(new URL('../docs/share/styles.css', import.meta.url), 'utf8');
+
+  assert.match(
+    css,
+    /@media \(max-width: 899px\)\s*\{[\s\S]*?\.summary-card\s*\{\s*order:\s*1;\s*\}[\s\S]*?\.action-rail\s*\{\s*order:\s*2;\s*\}[\s\S]*?\}/
   );
 });
