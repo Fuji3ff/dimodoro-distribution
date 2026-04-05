@@ -78,7 +78,6 @@ test('normalizeSummaryPayload は valid unavailable payload を保持しつつ t
     share_code: '7KQ9M2XZ',
     public_availability: 'unavailable',
     title: 'Night Focus Reset',
-    icon_key: 'sparkles',
     tags: ['focus', 'evening', 'sleep', 'study'],
     benefits_sentence: '夜の集中準備を 25 分で整える routine です。',
     total_duration_sec: 1500,
@@ -98,6 +97,23 @@ test('normalizeSummaryPayload は valid unavailable payload を保持しつつ t
   assert.deepEqual(payload?.tags, ['focus', 'evening', 'sleep']);
   assert.equal(payload?.publicAvailability, 'unavailable');
   assert.equal(payload?.shareCode, '7KQ9M2XZ');
+});
+
+test('normalizeSummaryPayload は icon_key がなくても shell 表示に必要な payload を受け入れる', () => {
+  const payload = normalizeSummaryPayload({
+    share_code: '7KQ9M2XZ',
+    public_availability: 'available',
+    title: 'Night Focus Reset',
+    benefits_sentence: '夜の集中準備を 25 分で整える routine です。',
+    total_duration_sec: 1500,
+    has_hue: false,
+    time_hint: '夜に向く 25 分',
+    tags: ['focus'],
+    step_summaries: [],
+  });
+
+  assert.equal(payload?.title, 'Night Focus Reset');
+  assert.equal(payload?.iconKey, '');
 });
 
 test('normalizeSummaryPayload は step required field 欠損を含む payload 全体を reject する', () => {
@@ -308,4 +324,10 @@ test('share_id 未解決時は Open ではなく Get fallback に倒す意図が
 
   assert.match(appJs, /const canOpenDirectly = Boolean\(state\.shareId && openAttemptUrl\);/);
   assert.match(appJs, /if \(ctaModel\.primary === 'open' && canOpenDirectly\)/);
+});
+
+test('share config の install 導線は project pages 配下でも解決できる相対 path を使う', () => {
+  const config = readFileSync(new URL('../docs/share/config.json', import.meta.url), 'utf8');
+
+  assert.match(config, /"install_page_url"\s*:\s*"\.\.\/install\/"/);
 });

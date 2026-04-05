@@ -153,7 +153,6 @@ export function normalizeSummaryPayload(payload) {
     !shareCode ||
     !['available', 'unavailable'].includes(publicAvailability) ||
     !title ||
-    !iconKey ||
     !benefitsSentence ||
     totalDurationSec === null ||
     typeof payload.has_hue !== 'boolean' ||

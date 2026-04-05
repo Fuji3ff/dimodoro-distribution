@@ -16,7 +16,7 @@ import {
 
 const DEFAULT_CONFIG = {
   apiBaseUrl: 'https://api.dimodoro.app',
-  installPageUrl: '/install/',
+  installPageUrl: '../install/',
   reportEnabled: false,
 };
 
