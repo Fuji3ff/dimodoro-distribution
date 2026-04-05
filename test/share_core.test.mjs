@@ -208,6 +208,19 @@ test('classifyDevice は Android mobile を識別する', () => {
   );
 });
 
+test('classifyDevice は Android tablet を mobile 扱いしない', () => {
+  assert.deepEqual(
+    classifyDevice(
+      'Mozilla/5.0 (Linux; Android 15; Pixel Tablet) AppleWebKit/537.36 Chrome/135.0 Safari/537.36'
+    ),
+    {
+      isAndroid: true,
+      isMobile: false,
+      isAndroidMobile: false,
+    }
+  );
+});
+
 test('deriveCtaModel は Android mobile installed を Open primary / Get secondary にする', () => {
   assert.deepEqual(
     deriveCtaModel({

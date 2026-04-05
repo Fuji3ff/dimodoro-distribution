@@ -196,11 +196,10 @@ export function deriveSummaryPresentation({ status = 0, payload = null } = {}) {
 export function classifyDevice(userAgent = '') {
   const ua = normalizeString(userAgent).toLowerCase();
   const isAndroid = ua.includes('android');
+  const hasMobileToken = ua.includes('mobile');
+  const isTablet = ua.includes('tablet') || ua.includes('ipad');
   const isMobile =
-    ua.includes('mobile') ||
-    ua.includes('iphone') ||
-    ua.includes('ipod') ||
-    (ua.includes('android') && !ua.includes('tablet'));
+    (hasMobileToken && !isTablet) || ua.includes('iphone') || ua.includes('ipod');
 
   return {
     isAndroid,
