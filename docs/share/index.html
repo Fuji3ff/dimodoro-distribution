@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dimodoro Routine Share</title>
+    <meta
+      name="description"
+      content="Dimodoro routine share の公開 summary です。"
+    />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="theme-color" content="#ff8a3d" />
+    <link rel="manifest" href="../manifest.webmanifest" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="share-shell" id="shareShell" aria-busy="true" data-state="loading">
+      <div
+        id="statusBanner"
+        class="status-banner"
+        role="status"
+        aria-live="polite"
+      ></div>
+      <p id="liveRegion" class="sr-only" aria-live="polite"></p>
+
+      <div class="layout">
+        <aside class="action-rail card" data-animate="1">
+          <span class="brand-pill" id="brandPill">Public Share</span>
+          <div class="action-copy">
+            <p class="eyebrow" id="summaryEyebrow">Public routine preview</p>
+            <h1 id="loadingTitle" class="action-title">routine summary を準備しています</h1>
+            <p id="loadingBenefits" class="action-note">
+              title / tags / benefits / steps を読み込み後に表示します。
+            </p>
+          </div>
+
+          <div class="cta-stack">
+            <a
+              id="primaryCta"
+              class="cta-button primary is-disabled"
+              href="#"
+              aria-disabled="true"
+            >
+              Get
+            </a>
+            <a
+              id="secondaryCta"
+              class="cta-button secondary is-hidden"
+              href="#"
+            >
+              Get
+            </a>
+            <p id="ctaHint" class="cta-hint">routine を読み込み中です。</p>
+          </div>
+
+          <div class="language-block">
+            <p class="label" id="languageLabel">Language</p>
+            <div class="toggle-group" role="group" aria-labelledby="languageLabel">
+              <button
+                id="localeJa"
+                class="toggle-button"
+                type="button"
+                data-locale="ja"
+                aria-pressed="true"
+              >
+                日本語
+              </button>
+              <button
+                id="localeEn"
+                class="toggle-button"
+                type="button"
+                data-locale="en"
+                aria-pressed="false"
+              >
+                English
+              </button>
+            </div>
+          </div>
+
+          <section id="shareCodeCard" class="mini-card is-hidden">
+            <p class="label" id="shareCodeLabel">Share code</p>
+            <p id="shareCodeValue" class="share-code">--------</p>
+            <p id="shareCodeHint" class="subtle">
+              アプリ内 manual import fallback 用の code です。
+            </p>
+          </section>
+
+          <section id="qrCard" class="mini-card qr-card">
+            <div class="qr-header">
+              <p class="label" id="qrTitle">別端末で開く</p>
+            </div>
+            <div id="qrCanvas" class="qr-canvas" aria-hidden="true"></div>
+            <p id="qrCaption" class="subtle">
+              QR の中身は公開 share URL そのものです。
+            </p>
+            <p class="url-label" id="qrUrlLabel">公開URL</p>
+            <p id="canonicalUrlText" class="url-text">https://dimodoro.app/share/...</p>
+          </section>
+
+          <div class="report-block">
+            <button
+              id="reportButton"
+              class="report-button"
+              type="button"
+              aria-disabled="true"
+            >
+              Report
+            </button>
+            <p id="reportHint" class="subtle">通報導線は準備中です。</p>
+          </div>
+        </aside>
+
+        <section id="summaryCard" class="summary-card card" data-animate="2">
+          <div class="summary-head">
+            <p class="eyebrow" id="summaryPill">Public routine preview</p>
+            <h2 id="summaryTitle" class="summary-title skeleton-block">
+              routine summary を読み込んでいます
+            </h2>
+            <p id="summaryBenefits" class="summary-lead skeleton-block">
+              loading
+            </p>
+          </div>
+
+          <div id="chipGroup" class="chip-group" aria-label="summary metadata"></div>
+
+          <section class="step-section">
+            <div class="section-header">
+              <h3 id="stepSectionTitle">Step summary</h3>
+              <span class="section-badge" id="tagsLabel">Tags</span>
+            </div>
+            <ol id="stepList" class="step-list"></ol>
+          </section>
+        </section>
+      </div>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

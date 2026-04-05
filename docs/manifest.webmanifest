@@ -1,0 +1,16 @@
+{
+  "name": "Dimodoro Public Share",
+  "short_name": "Dimodoro Share",
+  "description": "Public routine share pages for Dimodoro.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fbf0df",
+  "theme_color": "#ff8a3d",
+  "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "play",
+      "id": "dev.dimodoro.app"
+    }
+  ]
+}
