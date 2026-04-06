@@ -1,5 +1,12 @@
 const SUPPORTED_LOCALES = new Set(['ja', 'en']);
 const STEP_TYPES = new Set(['dimmer', 'timer', 'pomodoro', 'hue_wake_up']);
+const REPORT_REASONS = new Set([
+  'inappropriate',
+  'spam',
+  'dangerous_or_misleading',
+  'other',
+]);
+const REPORT_RESULT_STATUSES = new Set(['accepted', 'duplicate_report_suppressed']);
 const PACKAGE_ID = 'dev.dimodoro.app';
 
 function normalizeString(value) {
@@ -257,6 +264,46 @@ export function buildCanonicalShareUrl(shareId) {
 export function buildSummaryEndpoint(apiBaseUrl, shareId) {
   const baseUrl = normalizeString(apiBaseUrl).replace(/\/+$/, '');
   return `${baseUrl}/routine-shares/${encodeURIComponent(shareId)}/summary`;
+}
+
+export function buildReportEndpoint(apiBaseUrl, shareId) {
+  const baseUrl = normalizeString(apiBaseUrl).replace(/\/+$/, '');
+  return `${baseUrl}/routine-shares/${encodeURIComponent(shareId)}/report`;
+}
+
+export function normalizeReportResponse(payload) {
+  if (!payload || typeof payload !== 'object') {
+    return null;
+  }
+
+  const status = normalizeString(payload.status);
+  const sourceStatus = normalizeString(payload.source_status);
+  const reportedAt = normalizeString(payload.reported_at);
+  const nextReportAvailableAtRaw = payload.next_report_available_at;
+  const nextReportAvailableAt =
+    nextReportAvailableAtRaw === null
+      ? null
+      : normalizeString(nextReportAvailableAtRaw);
+
+  if (
+    !REPORT_RESULT_STATUSES.has(status) ||
+    !['active', 'expired', 'stopped'].includes(sourceStatus) ||
+    !reportedAt ||
+    (nextReportAvailableAtRaw !== null && !nextReportAvailableAt)
+  ) {
+    return null;
+  }
+
+  return {
+    status,
+    sourceStatus,
+    reportedAt,
+    nextReportAvailableAt,
+  };
+}
+
+export function isSupportedReportReason(reason) {
+  return REPORT_REASONS.has(normalizeString(reason));
 }
 
 export function formatDurationCompact(seconds, locale = 'en') {

@@ -2,6 +2,7 @@ import { qrcode } from './vendor/qrcode.js';
 
 import {
   buildCanonicalShareUrl,
+  buildReportEndpoint,
   buildSummaryEndpoint,
   classifyDevice,
   deriveCtaModel,
@@ -9,7 +10,9 @@ import {
   deriveSummaryPresentation,
   formatDurationCompact,
   formatStepDuration,
+  isSupportedReportReason,
   normalizeSummaryPayload,
+  normalizeReportResponse,
   resolveInitialLocale,
   resolveShareIdFromLocation,
 } from './core.js';
@@ -17,10 +20,12 @@ import {
 const DEFAULT_CONFIG = {
   apiBaseUrl: 'https://api.dimodoro.app',
   installPageUrl: '../install/',
-  reportEnabled: false,
+  reportEnabled: true,
 };
 
 const STORAGE_KEY = 'dimodoro-share-locale';
+const REPORTER_ID_STORAGE_KEY = 'dimodoro-share-anonymous-reporter-id';
+const REPORT_REASON_INPUT_SELECTOR = 'input[name="reportReason"]';
 
 const FALLBACK_MESSAGES = {
   ja: {
@@ -59,8 +64,21 @@ const FALLBACK_MESSAGES = {
     share_code_label: 'Share code',
     share_code_hint: 'アプリ内 manual import fallback 用の code です。',
     report_label: 'Report',
-    report_disabled: '通報導線は準備中です。',
-    report_placeholder: '通報導線は次の PR で接続予定です。',
+    report_disabled: '通報導線は今は使えません。',
+    report_idle: '不適切な公開 share を sign-in なしで通報できます。',
+    report_reason_label: '通報理由',
+    report_reason_inappropriate: '不適切な内容',
+    report_reason_spam: 'スパム',
+    report_reason_dangerous_or_misleading: '危険または誤解を招く内容',
+    report_reason_other: 'その他',
+    report_submit: '送信',
+    report_cancel: '閉じる',
+    report_missing_share: 'share を特定できないため通報を送信できません。',
+    report_submitting: '通報を送信しています。',
+    report_success: '通報を受け付けました。ご協力ありがとうございます。',
+    report_duplicate: 'このブラウザからの再通報は {{time}} 以降に再開できます。',
+    report_duplicate_no_time: 'このブラウザからの再通報は 24 時間後に再開できます。',
+    report_error: '通報を送信できませんでした。時間をおいて再試行してください。',
     qr_title: '別端末で開く',
     qr_caption: 'QR の中身は公開 share URL そのものです。',
     qr_url_label: '公開URL',
@@ -106,8 +124,21 @@ const FALLBACK_MESSAGES = {
     share_code_hint:
       'Use this code as the manual import fallback inside the app.',
     report_label: 'Report',
-    report_disabled: 'Report flow is not connected yet.',
-    report_placeholder: 'Report flow will be connected in the next PR.',
+    report_disabled: 'The report flow is unavailable right now.',
+    report_idle: 'You can report an inappropriate public share without signing in.',
+    report_reason_label: 'Reason',
+    report_reason_inappropriate: 'Inappropriate content',
+    report_reason_spam: 'Spam',
+    report_reason_dangerous_or_misleading: 'Dangerous or misleading',
+    report_reason_other: 'Other',
+    report_submit: 'Submit',
+    report_cancel: 'Cancel',
+    report_missing_share: 'We could not identify this share for reporting.',
+    report_submitting: 'Submitting your report.',
+    report_success: 'Your report was received. Thank you.',
+    report_duplicate: 'You can report this share again after {{time}} from this browser.',
+    report_duplicate_no_time: 'You can report this share again after 24 hours from this browser.',
+    report_error: 'We could not submit the report. Please try again later.',
     qr_title: 'Open on another device',
     qr_caption: 'This QR encodes the public share URL itself.',
     qr_url_label: 'Public URL',
@@ -134,6 +165,14 @@ const state = {
   device: classifyDevice(globalThis.navigator?.userAgent ?? ''),
   installState: 'unknown',
   shouldShowOpenFallback: false,
+  report: {
+    anonymousReporterId: '',
+    isOpen: false,
+    isSubmitting: false,
+    selectedReason: 'inappropriate',
+    feedbackKind: 'idle',
+    feedbackNextReportAvailableAt: null,
+  },
 };
 
 const elements = {
@@ -161,6 +200,14 @@ const elements = {
   qrUrlLabel: document.getElementById('qrUrlLabel'),
   canonicalUrlText: document.getElementById('canonicalUrlText'),
   reportButton: document.getElementById('reportButton'),
+  reportPanel: document.getElementById('reportPanel'),
+  reportReasonLabel: document.getElementById('reportReasonLabel'),
+  reportReasonInappropriateText: document.getElementById('reportReasonInappropriateText'),
+  reportReasonSpamText: document.getElementById('reportReasonSpamText'),
+  reportReasonDangerousText: document.getElementById('reportReasonDangerousText'),
+  reportReasonOtherText: document.getElementById('reportReasonOtherText'),
+  reportSubmitButton: document.getElementById('reportSubmitButton'),
+  reportCancelButton: document.getElementById('reportCancelButton'),
   reportHint: document.getElementById('reportHint'),
   summaryTitle: document.getElementById('summaryTitle'),
   summaryBenefits: document.getElementById('summaryBenefits'),
@@ -170,6 +217,9 @@ const elements = {
   tagsLabel: document.getElementById('tagsLabel'),
   stepList: document.getElementById('stepList'),
   metaDescription: document.querySelector('meta[name="description"]'),
+  reportReasonInputs: Array.from(
+    document.querySelectorAll(REPORT_REASON_INPUT_SELECTOR)
+  ),
 };
 
 function formatMessage(key, replacements = {}) {
@@ -217,6 +267,48 @@ function persistLocale(locale) {
   }
 }
 
+function readStoredAnonymousReporterId() {
+  try {
+    return localStorage.getItem(REPORTER_ID_STORAGE_KEY) ?? '';
+  } catch {
+    return '';
+  }
+}
+
+function persistAnonymousReporterId(reporterId) {
+  try {
+    localStorage.setItem(REPORTER_ID_STORAGE_KEY, reporterId);
+  } catch {
+    // WHY: storage 非対応時でも page session 中の report を止めない。
+  }
+}
+
+function generateAnonymousReporterId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `web_${crypto.randomUUID()}`;
+  }
+
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+    return `web_${hex}`;
+  }
+
+  return `web_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 14)}`;
+}
+
+function ensureAnonymousReporterId() {
+  const storedReporterId = readStoredAnonymousReporterId();
+  if (storedReporterId && storedReporterId.length >= 16) {
+    return storedReporterId;
+  }
+
+  const reporterId = generateAnonymousReporterId();
+  persistAnonymousReporterId(reporterId);
+  return reporterId;
+}
+
 function setLocaleButtons() {
   elements.localeJa.setAttribute('aria-pressed', String(state.locale === 'ja'));
   elements.localeEn.setAttribute('aria-pressed', String(state.locale === 'en'));
@@ -239,14 +331,29 @@ function applyStaticCopy() {
   setText(elements.qrCaption, state.messages.qr_caption);
   setText(elements.qrUrlLabel, state.messages.qr_url_label);
   setText(elements.reportButton, state.messages.report_label);
-  setText(elements.reportHint, state.messages.report_disabled);
+  setText(elements.reportReasonLabel, state.messages.report_reason_label);
+  setText(
+    elements.reportReasonInappropriateText,
+    state.messages.report_reason_inappropriate
+  );
+  setText(elements.reportReasonSpamText, state.messages.report_reason_spam);
+  setText(
+    elements.reportReasonDangerousText,
+    state.messages.report_reason_dangerous_or_misleading
+  );
+  setText(elements.reportReasonOtherText, state.messages.report_reason_other);
+  setText(elements.reportSubmitButton, state.messages.report_submit);
+  setText(elements.reportCancelButton, state.messages.report_cancel);
   setText(elements.stepSectionTitle, state.messages.step_section_title);
   setText(elements.tagsLabel, state.messages.tags_label);
   setLocaleButtons();
 }
 
-async function fetchJson(url) {
-  const response = await fetch(url, { cache: 'no-store' });
+async function fetchJson(url, options = {}) {
+  const response = await fetch(url, {
+    cache: 'no-store',
+    ...options,
+  });
   const text = await response.text();
   let data = null;
 
@@ -355,6 +462,101 @@ function renderQr() {
   });
   setText(elements.canonicalUrlText, state.canonicalShareUrl);
   setVisibility(elements.qrCard, true);
+}
+
+function setReportFeedback(kind, nextReportAvailableAt = null) {
+  state.report.feedbackKind = kind;
+  state.report.feedbackNextReportAvailableAt = nextReportAvailableAt;
+}
+
+function formatReportRetryAt(nextReportAvailableAt) {
+  if (!nextReportAvailableAt) {
+    return state.messages.report_duplicate_no_time;
+  }
+
+  const retryAt = new Date(nextReportAvailableAt);
+  if (Number.isNaN(retryAt.valueOf())) {
+    return state.messages.report_duplicate_no_time;
+  }
+
+  const formattedTime = new Intl.DateTimeFormat(state.locale, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(retryAt);
+
+  return formatMessage('report_duplicate', { time: formattedTime });
+}
+
+function isReportAvailable() {
+  return Boolean(state.config.reportEnabled && state.shareId);
+}
+
+function syncSelectedReportReason() {
+  const selectedInput = elements.reportReasonInputs.find((input) => input.checked);
+  const selectedReason = selectedInput?.value ?? state.report.selectedReason;
+  state.report.selectedReason = isSupportedReportReason(selectedReason)
+    ? selectedReason
+    : 'inappropriate';
+}
+
+function setReportInputsDisabled(disabled) {
+  elements.reportReasonInputs.forEach((input) => {
+    input.disabled = disabled;
+  });
+  elements.reportSubmitButton.disabled = disabled;
+  elements.reportCancelButton.disabled = disabled;
+}
+
+async function submitReport() {
+  if (!isReportAvailable() || state.report.isSubmitting) {
+    return;
+  }
+
+  syncSelectedReportReason();
+  state.report.isSubmitting = true;
+  setReportFeedback('submitting');
+  renderReportState();
+  setStatus(state.messages.report_submitting, true);
+
+  try {
+    const result = await fetchJson(
+      buildReportEndpoint(state.config.apiBaseUrl, state.shareId),
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Anonymous-Reporter-Id': state.report.anonymousReporterId,
+        },
+        body: JSON.stringify({ reason: state.report.selectedReason }),
+      }
+    );
+    const reportResponse = normalizeReportResponse(result.data);
+
+    if (result.ok && reportResponse) {
+      const isDuplicate = reportResponse.status === 'duplicate_report_suppressed';
+      const feedbackMessage = isDuplicate
+        ? formatReportRetryAt(reportResponse.nextReportAvailableAt)
+        : state.messages.report_success;
+
+      // WHY: accepted 系 truth が返った時だけ success 扱いにし、request 開始とは分離する。
+      state.report.isOpen = false;
+      setReportFeedback(
+        isDuplicate ? 'duplicate' : 'success',
+        reportResponse.nextReportAvailableAt
+      );
+      setStatus(feedbackMessage, true);
+      return;
+    }
+
+    setReportFeedback('error');
+    setStatus(state.messages.report_error, true);
+  } catch {
+    setReportFeedback('error');
+    setStatus(state.messages.report_error, true);
+  } finally {
+    state.report.isSubmitting = false;
+    renderReportState();
+  }
 }
 
 function createChip(className, text) {
@@ -492,6 +694,7 @@ function renderLoadingSkeleton() {
   setText(elements.ctaHint, state.messages.loading_status);
   setVisibility(elements.shareCodeCard, false);
   setVisibility(elements.qrCard, false);
+  renderReportState();
 }
 
 function updateDocumentMeta() {
@@ -555,13 +758,27 @@ function updateCtas() {
 }
 
 function renderReportState() {
-  if (state.config.reportEnabled) {
-    elements.reportButton.setAttribute('aria-disabled', 'false');
-    setText(elements.reportHint, state.messages.report_placeholder);
-  } else {
-    elements.reportButton.setAttribute('aria-disabled', 'true');
-    setText(elements.reportHint, state.messages.report_disabled);
-  }
+  const canReport = isReportAvailable();
+  const isDisabled = !canReport || state.report.isSubmitting;
+  const hintTextByFeedbackKind = {
+    idle: state.messages.report_idle,
+    submitting: state.messages.report_submitting,
+    success: state.messages.report_success,
+    duplicate: formatReportRetryAt(state.report.feedbackNextReportAvailableAt),
+    error: state.messages.report_error,
+  };
+  const hintText = !state.config.reportEnabled
+    ? state.messages.report_disabled
+    : !state.shareId
+      ? state.messages.report_missing_share
+      : hintTextByFeedbackKind[state.report.feedbackKind] ?? state.messages.report_idle;
+
+  elements.reportButton.disabled = isDisabled;
+  elements.reportButton.setAttribute('aria-disabled', String(isDisabled));
+  setVisibility(elements.reportPanel, canReport && state.report.isOpen);
+  setText(elements.reportHint, hintText);
+  setReportInputsDisabled(!canReport || state.report.isSubmitting);
+  syncSelectedReportReason();
 }
 
 function renderPayloadSummary(payload) {
@@ -670,11 +887,33 @@ function attachEventListeners() {
     window.location.assign(openAttemptUrl);
   });
 
+  elements.reportReasonInputs.forEach((input) => {
+    input.addEventListener('change', () => {
+      syncSelectedReportReason();
+    });
+  });
+
   elements.reportButton.addEventListener('click', () => {
     if (elements.reportButton.getAttribute('aria-disabled') === 'true') {
       return;
     }
-    setStatus(state.messages.report_placeholder, true);
+
+    // WHY: reason 選択は inline で完結させ、public page の CTA 骨格や scroll position を崩さない。
+    state.report.isOpen = !state.report.isOpen;
+    renderReportState();
+  });
+
+  elements.reportCancelButton.addEventListener('click', () => {
+    if (state.report.isSubmitting) {
+      return;
+    }
+
+    state.report.isOpen = false;
+    renderReportState();
+  });
+
+  elements.reportSubmitButton.addEventListener('click', async () => {
+    await submitReport();
   });
 }
 
@@ -712,6 +951,8 @@ async function init() {
   state.config = config;
   state.messages = messages;
   state.installState = installState;
+  state.report.anonymousReporterId = ensureAnonymousReporterId();
+  syncSelectedReportReason();
 
   applyStaticCopy();
   renderLoadingSkeleton();

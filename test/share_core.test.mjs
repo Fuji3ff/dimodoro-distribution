@@ -3,11 +3,14 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import {
+  buildReportEndpoint,
   buildShareRedirectTarget,
   classifyDevice,
   deriveCtaModel,
   deriveInstallState,
   deriveSummaryPresentation,
+  isSupportedReportReason,
+  normalizeReportResponse,
   normalizeSummaryPayload,
   resolveInitialLocale,
   resolveShareIdFromLocation,
@@ -30,6 +33,13 @@ test('resolveShareIdFromLocation は query fallback を許可する', () => {
       search: '?share_id=rs_query_fallback',
     }),
     'rs_query_fallback'
+  );
+});
+
+test('buildReportEndpoint は report API path を組み立てる', () => {
+  assert.equal(
+    buildReportEndpoint('https://api.dimodoro.app/', 'rs_report_01'),
+    'https://api.dimodoro.app/routine-shares/rs_report_01/report'
   );
 });
 
@@ -71,6 +81,45 @@ test('normalizeSummaryPayload は required field を満たさない payload を 
     }),
     null
   );
+});
+
+test('normalizeReportResponse は accepted payload を正規化する', () => {
+  assert.deepEqual(
+    normalizeReportResponse({
+      status: 'accepted',
+      source_status: 'active',
+      reported_at: '2026-04-01T09:10:00Z',
+      next_report_available_at: null,
+    }),
+    {
+      status: 'accepted',
+      sourceStatus: 'active',
+      reportedAt: '2026-04-01T09:10:00Z',
+      nextReportAvailableAt: null,
+    }
+  );
+});
+
+test('normalizeReportResponse は duplicate_report_suppressed payload を正規化する', () => {
+  assert.deepEqual(
+    normalizeReportResponse({
+      status: 'duplicate_report_suppressed',
+      source_status: 'stopped',
+      reported_at: '2026-04-01T09:10:00Z',
+      next_report_available_at: '2026-04-02T09:10:00Z',
+    }),
+    {
+      status: 'duplicate_report_suppressed',
+      sourceStatus: 'stopped',
+      reportedAt: '2026-04-01T09:10:00Z',
+      nextReportAvailableAt: '2026-04-02T09:10:00Z',
+    }
+  );
+});
+
+test('isSupportedReportReason は contract 定義済み reason のみを許可する', () => {
+  assert.equal(isSupportedReportReason('dangerous_or_misleading'), true);
+  assert.equal(isSupportedReportReason('free_text_is_not_allowed'), false);
 });
 
 test('normalizeSummaryPayload は valid unavailable payload を保持しつつ tags を 3 件へ制限する', () => {
@@ -340,6 +389,25 @@ test('share config の install 導線は project pages 配下でも解決でき�
   const config = readFileSync(new URL('../docs/share/config.json', import.meta.url), 'utf8');
 
   assert.match(config, /"install_page_url"\s*:\s*"\.\.\/install\/"/);
+  assert.match(config, /"report_enabled"\s*:\s*true/);
+});
+
+test('public share page は report 理由選択と submit/cancel を inline で持つ', () => {
+  const html = readFileSync(new URL('../docs/share/index.html', import.meta.url), 'utf8');
+
+  assert.match(html, /role="radiogroup"/);
+  assert.match(html, /name="reportReason"/);
+  assert.match(html, /id="reportSubmitButton"/);
+  assert.match(html, /id="reportCancelButton"/);
+});
+
+test('report button は placeholder ではなく report API submit を呼ぶ', () => {
+  const appJs = readFileSync(new URL('../docs/share/app.js', import.meta.url), 'utf8');
+
+  assert.match(appJs, /buildReportEndpoint\(state\.config\.apiBaseUrl, state\.shareId\)/);
+  assert.match(appJs, /'X-Anonymous-Reporter-Id': state\.report\.anonymousReporterId/);
+  assert.match(appJs, /JSON\.stringify\(\{ reason: state\.report\.selectedReason \}\)/);
+  assert.match(appJs, /reportResponse\.status === 'duplicate_report_suppressed'/);
 });
 
 test('404 fallback の戻り先リンクは project pages 配下でも base path を維持する', () => {
