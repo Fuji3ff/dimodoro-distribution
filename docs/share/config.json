@@ -1,5 +1,5 @@
 {
   "api_base_url": "https://api.dimodoro.app",
   "install_page_url": "../install/",
-  "report_enabled": false
+  "report_enabled": true
 }

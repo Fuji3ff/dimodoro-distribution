@@ -103,10 +103,68 @@
               class="report-button"
               type="button"
               aria-disabled="true"
+              aria-controls="reportPanel"
+              aria-expanded="false"
             >
               Report
             </button>
-            <p id="reportHint" class="subtle">通報導線は準備中です。</p>
+            <div id="reportPanel" class="report-panel is-hidden" aria-hidden="true">
+              <p class="label" id="reportReasonLabel">通報理由</p>
+              <div
+                class="report-reason-list"
+                role="radiogroup"
+                aria-labelledby="reportReasonLabel"
+              >
+                <label class="report-reason-option" for="reportReasonInappropriateInput">
+                  <input
+                    id="reportReasonInappropriateInput"
+                    type="radio"
+                    name="reportReason"
+                    value="inappropriate"
+                    checked
+                  />
+                  <span id="reportReasonInappropriateText">不適切な内容</span>
+                </label>
+                <label class="report-reason-option" for="reportReasonSpamInput">
+                  <input
+                    id="reportReasonSpamInput"
+                    type="radio"
+                    name="reportReason"
+                    value="spam"
+                  />
+                  <span id="reportReasonSpamText">スパム</span>
+                </label>
+                <label class="report-reason-option" for="reportReasonDangerousInput">
+                  <input
+                    id="reportReasonDangerousInput"
+                    type="radio"
+                    name="reportReason"
+                    value="dangerous_or_misleading"
+                  />
+                  <span id="reportReasonDangerousText">危険または誤解を招く内容</span>
+                </label>
+                <label class="report-reason-option" for="reportReasonOtherInput">
+                  <input
+                    id="reportReasonOtherInput"
+                    type="radio"
+                    name="reportReason"
+                    value="other"
+                  />
+                  <span id="reportReasonOtherText">その他</span>
+                </label>
+              </div>
+              <div class="report-actions">
+                <button id="reportSubmitButton" class="report-submit-button" type="button">
+                  送信
+                </button>
+                <button id="reportCancelButton" class="report-cancel-button" type="button">
+                  閉じる
+                </button>
+              </div>
+            </div>
+            <p id="reportHint" class="subtle">
+              不適切な公開 share を sign-in なしで通報できます。
+            </p>
           </div>
         </aside>
 
