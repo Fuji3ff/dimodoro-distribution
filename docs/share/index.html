@@ -103,10 +103,12 @@
               class="report-button"
               type="button"
               aria-disabled="true"
+              aria-controls="reportPanel"
+              aria-expanded="false"
             >
               Report
             </button>
-            <div id="reportPanel" class="report-panel is-hidden">
+            <div id="reportPanel" class="report-panel is-hidden" aria-hidden="true">
               <p class="label" id="reportReasonLabel">通報理由</p>
               <div
                 class="report-reason-list"

@@ -43,6 +43,21 @@ test('buildReportEndpoint は report API path を組み立てる', () => {
   );
 });
 
+test('public share page は report panel の ARIA 契約を持つ', () => {
+  const html = readFileSync(new URL('../docs/share/index.html', import.meta.url), 'utf8');
+
+  assert.match(html, /id="reportButton"[\s\S]*aria-controls="reportPanel"/);
+  assert.match(html, /id="reportButton"[\s\S]*aria-expanded="false"/);
+  assert.match(html, /id="reportPanel"[\s\S]*aria-hidden="true"/);
+});
+
+test('report panel render は aria-expanded と aria-hidden を同期する', () => {
+  const source = readFileSync(new URL('../docs/share/app.js', import.meta.url), 'utf8');
+
+  assert.match(source, /reportButton\.setAttribute\('aria-expanded', String\(isExpanded\)\)/);
+  assert.match(source, /reportPanel\.setAttribute\('aria-hidden', String\(!isExpanded\)\)/);
+});
+
 test('resolveShareIdFromLocation は不正エンコードでも white screen にせず query fallback を使える', () => {
   assert.equal(
     resolveShareIdFromLocation({

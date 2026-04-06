@@ -760,6 +760,7 @@ function updateCtas() {
 function renderReportState() {
   const canReport = isReportAvailable();
   const isDisabled = !canReport || state.report.isSubmitting;
+  const isExpanded = canReport && state.report.isOpen;
   const hintTextByFeedbackKind = {
     idle: state.messages.report_idle,
     submitting: state.messages.report_submitting,
@@ -775,7 +776,11 @@ function renderReportState() {
 
   elements.reportButton.disabled = isDisabled;
   elements.reportButton.setAttribute('aria-disabled', String(isDisabled));
-  setVisibility(elements.reportPanel, canReport && state.report.isOpen);
+  // WHY: inline panel 開閉は button 自体が状態を持つため、screen reader が
+  //      展開状態を追えるよう DOM visibility と ARIA を同じ truth source に揃える。
+  elements.reportButton.setAttribute('aria-expanded', String(isExpanded));
+  setVisibility(elements.reportPanel, isExpanded);
+  elements.reportPanel.setAttribute('aria-hidden', String(!isExpanded));
   setText(elements.reportHint, hintText);
   setReportInputsDisabled(!canReport || state.report.isSubmitting);
   syncSelectedReportReason();
