@@ -1,8 +1,6 @@
 {
   "repository_full_name": "Fuji3ff/dimodoro-distribution",
-  "apk_latest_url": "https://github.com/Fuji3ff/dimodoro-distribution/releases/latest/download/dimodoro-latest.apk",
-  "play_opt_in_url": "",
+  "play_opt_in_url": "https://play.google.com/apps/internaltest/4700396523335555745",
   "play_listing_url": "",
-  "expires_at": "2026-01-04",
-  "note": "テスト配布中です。"
+  "note": "APKの直接配布は終了しました。Google Playの内部テストは、招待済みのテスターのみ参加できます。"
 }

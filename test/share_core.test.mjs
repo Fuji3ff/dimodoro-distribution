@@ -249,7 +249,7 @@ test('deriveInstallState は related apps supported かつ package 一致で ins
   assert.equal(
     deriveInstallState({
       relatedAppsSupported: true,
-      relatedApps: [{ id: 'dev.dimodoro.app', platform: 'play' }],
+      relatedApps: [{ id: 'app.dimodoro', platform: 'play' }],
     }),
     'installed'
   );
@@ -405,6 +405,25 @@ test('share config の install 導線は project pages 配下でも解決でき�
 
   assert.match(config, /"install_page_url"\s*:\s*"\.\.\/install\/"/);
   assert.match(config, /"report_enabled"\s*:\s*true/);
+});
+
+test('install page はAPK直接配布を持たずPlay内部テストだけを案内する', () => {
+  const config = JSON.parse(
+    readFileSync(new URL('../docs/install/config.json', import.meta.url), 'utf8')
+  );
+  const html = readFileSync(
+    new URL('../docs/install/index.html', import.meta.url),
+    'utf8'
+  );
+  const appJs = readFileSync(
+    new URL('../docs/install/app.js', import.meta.url),
+    'utf8'
+  );
+
+  assert.equal('apk_latest_url' in config, false);
+  assert.match(config.play_opt_in_url, /^https:\/\/play\.google\.com\/apps\/internaltest\//);
+  assert.doesNotMatch(html, /APKでインストール/);
+  assert.doesNotMatch(appJs, /apk_latest_url/);
 });
 
 test('public share page は report 理由選択と submit/cancel を inline で持つ', () => {

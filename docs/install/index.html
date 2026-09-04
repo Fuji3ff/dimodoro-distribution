@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Dimodoro テスト版 インストール</title>
+    <title>Dimodoro 内部テスト</title>
     <meta
       name="description"
-      content="Dimodoro テスト版のインストールページです。APKを直接ダウンロードできます。"
+      content="招待済みテスター向けのDimodoro Google Play内部テスト参加ページです。"
     />
     <link rel="stylesheet" href="style.css" />
   </head>
@@ -14,18 +14,12 @@
     <main class="page">
       <header class="hero" data-animate="1">
         <span class="brand-pill">Dimodoro</span>
-        <h1>Dimodoro テスト版 インストール</h1>
+        <h1>Dimodoro 内部テスト</h1>
         <p class="lead">
-          このページから直接ダウンロードできます。迷ったら通話で案内します。
+          テスト版はGoogle Playから配布します。APKの直接配布は終了しました。
         </p>
       </header>
 
-      <div
-        id="expiryBanner"
-        class="banner is-hidden"
-        role="status"
-        aria-live="polite"
-      ></div>
       <div id="configError" class="banner is-hidden" role="alert"></div>
 
       <section class="panel actions" data-animate="2">
@@ -35,31 +29,24 @@
             class="action-button play is-hidden"
             href="#"
             aria-disabled="true"
-            >Playストアでインストール</a
-          >
-          <a
-            id="apkButton"
-            class="action-button apk is-disabled"
-            href="#"
-            aria-disabled="true"
-            >APKでインストール</a
+            >Google Playの内部テストに参加</a
           >
         </div>
-        <p class="action-note">APKを押す&nbsp;&nbsp;ダウンロード&nbsp;&nbsp;インストール</p>
+        <p class="action-note">招待されたGoogleアカウントで開いてください</p>
       </section>
 
       <section class="panel steps" data-animate="3">
         <h2>かんたん手順</h2>
         <ol>
-          <li>「APKでインストール」を押す</li>
-          <li>ダウンロードが終わったら開く</li>
-          <li>インストールを押す</li>
+          <li>「Google Playの内部テストに参加」を押す</li>
+          <li>招待されたGoogleアカウントでテスターになる</li>
+          <li>Google PlayからDimodoroをインストールする</li>
         </ol>
       </section>
 
       <section class="panel help" data-animate="4">
-        <h2>ブロックされたら</h2>
-        <p>ブロックされたらこの提供元を許可をON（通話で案内します）</p>
+        <h2>参加できない場合</h2>
+        <p>Playストアで使っているGoogleアカウントが、内部テスターとして招待済みか確認してください。</p>
       </section>
 
       <section class="panel info" data-animate="5">
@@ -67,7 +54,7 @@
         <div class="info-row">
           <div>
             <p>リポジトリ: <span id="repoName">読み込み中</span></p>
-            <p>期限: <span id="expiresAt">読み込み中</span></p>
+            <p>配布方法: Google Play 内部テスト</p>
           </div>
           <div id="noteBox" class="note is-hidden">
             <span id="noteText"></span>
@@ -75,13 +62,13 @@
         </div>
       </section>
 
-      <footer class="footer">Dimodoro テスト配布ページ</footer>
+      <footer class="footer">Dimodoro 内部テスト案内</footer>
     </main>
 
     <noscript>
       <div class="page">
         <div class="banner" role="alert">
-          JavaScriptを有効にしてください。APKのリンク表示に必要です。
+          JavaScriptを有効にしてください。Google Playの参加リンク表示に必要です。
         </div>
       </div>
     </noscript>
