@@ -1,24 +1,26 @@
-# Dimodoro 配布ページ運用
+# Dimodoro 公開共有ページ運用
 
-このリポジトリは GitHub Pages（docs/ をソース）で配布ページを公開します。
-APK 本体は GitHub Releases にのみ置き、リポジトリへコミットしません。
+このリポジトリは GitHub Pages（`docs/` をソース）で、Routine の公開共有ページとテスト参加案内を公開します。
 
-## 新APKの更新手順
-1. GitHub Releases で新しい Release を作成する
-2. asset 名は必ず `dimodoro-latest.apk` で添付する（latest/download を固定するため）
-3. 期限を更新する場合は `docs/install/config.json` の `expires_at` を更新する
-4. Play ストア導線を出す場合は `play_opt_in_url` / `play_listing_url` を設定する
+## 配布方針
 
-## 設定ファイル
-- `docs/install/config.json` を編集すると配布ページに反映されます
-- `expires_at` を過ぎると警告が表示されますが、APK のダウンロードは継続できます
+- 2026-09-04 に GitHub Releases からのデバッグ APK 直接配布を終了しました。
+- 今後のテスト配布は Google Play の内部テストへ一本化します。
+- 旧 `v0.1.0` Release は復旧用のドラフトとして保持し、公開しません。
+- APK を GitHub Releases や Pages に追加しないでください。
 
-## LINEで送るテンプレ（URLはページ1本）
-```
-Dimodoro テスト版のインストールはこちらです。
+## 内部テストの案内
+
+- 参加 URL は `docs/install/config.json` の `play_opt_in_url` で管理します。
+- 参加者は事前に Play Console の内部テスター用メーリングリストへ追加する必要があります。
+- 未招待の Google アカウントでは、参加 URL を開いてもインストールできません。
+
+## LINEで送るテンプレ
+
+```text
+Dimodoro の内部テストはこちらです。
 URL: https://fuji3ff.github.io/dimodoro-distribution/
-APKを押す → ダウンロード → インストール
-ブロックされたらこの提供元を許可をON（通話で案内します）
+招待された Google アカウントで開き、テスター参加後に Google Play からインストールしてください。
 ```
 
 ※ GitHub Pages の公開設定やカスタムドメインを変えた場合は URL を差し替えてください。

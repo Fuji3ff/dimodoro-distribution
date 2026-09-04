@@ -7,7 +7,7 @@ const REPORT_REASONS = new Set([
   'other',
 ]);
 const REPORT_RESULT_STATUSES = new Set(['accepted', 'duplicate_report_suppressed']);
-const PACKAGE_ID = 'dev.dimodoro.app';
+const PACKAGE_ID = 'app.dimodoro';
 
 function normalizeString(value) {
   return typeof value === 'string' ? value.trim() : '';
