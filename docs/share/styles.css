@@ -677,6 +677,10 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  [data-animate] {
+    opacity: 1;
+  }
+
   [data-animate],
   .cta-button,
   .toggle-button,
